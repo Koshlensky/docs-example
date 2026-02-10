@@ -1,0 +1,21 @@
+++++
+<style>
+.guide-title{
+  display: block;
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: 700;
+  margin: 0.5em 0;
+}
+
+#toc .title {
+  text-align: left !important;
+  font-weight: 500 !important;
+  font-size: 1.3em !important;
+}
+
+h1 {
+  text-align: center !important;
+}
+</style>
+++++

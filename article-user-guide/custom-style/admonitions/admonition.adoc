@@ -1,0 +1,38 @@
+++++
+<style>
+/* --- Admonition block styling (NOTE, TIP, WARNING, etc.) --- */
+.admonitionblock {
+  border-left: 4px solid #007ACC; /* основной акцент */
+  background: #f5f7fa;
+  padding: 0.8em 1em;
+  margin: 1.2em 0;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.admonitionblock > table {
+  border: none;
+  width: 100%;
+}
+
+.admonitionblock .icon {
+  color: #007ACC;
+  font-weight: 600;
+  text-transform: uppercase;
+  width: 60px;
+  vertical-align: top;
+}
+
+.admonitionblock .content {
+  color: #333;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.admonitionblock.note .icon::before { content: "💡 "; }
+.admonitionblock.tip .icon::before { content: "💬 "; }
+.admonitionblock.warning .icon::before { content: "⚠️ "; color: #d9822b; }
+.admonitionblock.caution .icon::before { content: "🚫 "; color: #b30000; }
+.admonitionblock.important .icon::before { content: "⭐ "; color: #0055aa; }
+</style>
+++++
