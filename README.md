@@ -81,10 +81,3 @@ docs-example/
 
 - `api-description/api-create-method.html`
 - `user-guide/calculator-user-guide.html`
-
-## Примечание
-
-Репозиторий подходит как демонстрационный пример для:
-
-- документации API
-- пользовательских инструкций
