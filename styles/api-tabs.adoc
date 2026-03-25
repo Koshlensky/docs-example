@@ -1,0 +1,110 @@
+++++
+<style>
+.api-tabs {
+  margin: 1.5rem 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.api-tabs__nav {
+  display: flex;
+  gap: 0;
+  padding: 0.5rem 0.5rem 0;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.api-tabs__button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  padding: 0.75rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.api-tabs__button:hover {
+  color: #111827;
+}
+
+.api-tabs__button.is-active {
+  color: #111827;
+  border-bottom-color: #7c3aed;
+}
+
+.api-tabs__panel {
+  display: none;
+  padding: 1rem;
+}
+
+.api-tabs__panel.is-active {
+  display: block;
+}
+
+.api-tabs__panel > :first-child {
+  margin-top: 0;
+}
+
+.api-tabs__panel > :last-child {
+  margin-bottom: 0;
+}
+
+/* Кодовые блоки внутри табов */
+.api-tabs pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: #111827;
+  color: #f9fafb;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.api-tabs code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* Светлый вариант, если нужен */
+.api-tabs--light pre {
+  background: #f8fafc;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('[data-api-tabs]').forEach(function (tabs) {
+    const buttons = tabs.querySelectorAll('[data-tab-button]');
+    const panels = tabs.querySelectorAll('[data-tab-panel]');
+
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        const target = button.getAttribute('data-tab-target');
+
+        buttons.forEach(function (btn) {
+          btn.classList.remove('is-active');
+        });
+
+        panels.forEach(function (panel) {
+          panel.classList.remove('is-active');
+        });
+
+        button.classList.add('is-active');
+        const activePanel = tabs.querySelector('[data-tab-panel="' + target + '"]');
+        if (activePanel) {
+          activePanel.classList.add('is-active');
+        }
+      });
+    });
+  });
+});
+</script>
+++++

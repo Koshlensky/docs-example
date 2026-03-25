@@ -1,0 +1,125 @@
+++++
+<style>
+.admonitionblock {
+  margin: 1.5em 0;
+}
+
+.admonitionblock table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border: none;
+  background: transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admonitionblock td.icon {
+  width: 1%;
+  white-space: nowrap;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: 600;
+  padding: 16px 20px;
+  border-right: 1px solid rgba(0,0,0,0.1);
+  background-clip: padding-box;
+}
+
+.admonitionblock td.content {
+  padding: 16px 20px;
+  font-size: 0.95em;
+  line-height: 1.5;
+  color: #2c3e50;
+  border-left: none;
+}
+
+.admonitionblock.note td.icon {
+  background: #e1f0fa !important;
+  color: #1e4b7a;
+}
+.admonitionblock.note td.content {
+  background: #f0f9ff !important;
+  border-left: 4px solid #3498db;
+}
+
+.admonitionblock.tip td.icon {
+  background: #e0f2e9 !important;
+  color: #1e7e5a;
+}
+.admonitionblock.tip td.content {
+  background: #f0faf5 !important;
+  border-left: 4px solid #2ecc71;
+}
+
+.admonitionblock.important td.icon {
+  background: #ffe6e6 !important;
+  color: #b52b2b;
+}
+.admonitionblock.important td.content {
+  background: #fff5f5 !important;
+  border-left: 4px solid #e74c3c;
+}
+
+.admonitionblock.caution td.icon {
+  background: #ffeed9 !important;
+  color: #b45f1b;
+}
+.admonitionblock.caution td.content {
+  background: #fff7e6 !important;
+  border-left: 4px solid #f39c12;
+}
+
+.admonitionblock.warning td.icon {
+  background: #fff1c1 !important;
+  color: #8a6d3b;
+}
+.admonitionblock.warning td.content {
+  background: #fef9e7 !important;
+  border-left: 4px solid #f1c40f;
+}
+
+.admonitionblock.note td.icon .title,
+.admonitionblock.tip td.icon .title,
+.admonitionblock.important td.icon .title,
+.admonitionblock.caution td.icon .title,
+.admonitionblock.warning td.icon .title {
+  font-size: 0;
+}
+
+.admonitionblock.note td.icon .title::before {
+  content: "Примечание";
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admonitionblock.tip td.icon .title::before {
+  content: "Совет";
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admonitionblock.important td.icon .title::before {
+  content: "Важно";
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admonitionblock.caution td.icon .title::before {
+  content: "Осторожно";
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admonitionblock.warning td.icon .title::before {
+  content: "Предупреждение";
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admonitionblock table:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+</style>
+++++

@@ -5,8 +5,10 @@
 :toc-title: Содержание
 :sectanchors:
 
-include::custom-style/user-guide/user-guide.adoc[]
-include::custom-style/admonitions/admonition.adoc[]
+include::../styles/api-tabs.adoc[]
+include::../styles/custom-design-headings.adoc[]
+include::../styles/user-guide.adoc[]
+include::../styles/admonitions.adoc[]
 
 [.guide-title]#Руководство по эксплуатации#
 
@@ -132,21 +134,21 @@ text{Throughput}_{TDD} = text{Throughput}_{base}cdot alpha_{text{dir}}
 
 На странице результат отображается вверху/снизу, например:
 
-image:images/image-calc-int-1.png[width=50%]
+image:../images/image-calc-int-1.png[width=50%]
 
 Ниже расположены блоки параметров:
 
 * *Input data* (входные параметры, которые вы задаете)
 +
-image:images/image-calc-int-2.png[width=70%]
+image:../images/image-calc-int-2.png[width=70%]
 
 * *Only for TDD* (блок используется в случае, если выбран режим *TDD*.
 +
-image:images/image-calc-int-3.png[width=70%]
+image:../images/image-calc-int-3.png[width=70%]
 
 * *Intermediate calculations* (серые поля, которые калькулятор считает сам)
 +
-image:images/image-calc-int-4.png[width=70%]
+image:../images/image-calc-int-4.png[width=70%]
 +
 [NOTE]
 --

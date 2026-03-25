@@ -1,0 +1,202 @@
+= create
+
+include::../styles/api-tabs.adoc[]
+include::../styles/custom-design-headings.adoc[]
+
+Creates a WhatsApp mailing in Voximplant Kit.
+
+== General information
+
+[cols="1a,3a",options="header"]
+|===
+|Field |Value
+
+|HTTP Method
+|`POST`
+
+|Method name
+|`create`
+
+|Endpoint
+|`https://YOUR_ACCOUNT_API_HOST/api/v3/bulkMessaging/create`
+
+|Description
+|Creates a WhatsApp mailing with the specified parameters.
+|===
+
+== Authentication
+
+The preferred way of using the Voximplant Kit API is as follows:
+
+. Generate an API token in the **Administration > Security > API tokens** section in Voximplant Kit.
+. Paste the generated API token into the `access_token` parameter in a request body or URL (`YOUR_ACCESS_TOKEN`).
+. Copy your Account name in the **Administration > Security > API tokens** section.
+. Paste the Account name into the `domain` parameter in a request or URL (`YOUR_ACCOUNT_NAME`).
+. Copy your API hostname in the **Administration > Security > API tokens** section.
+. Paste your API hostname into a request URL (`YOUR_ACCOUNT_API_HOST`).
+
+* `YOUR_ACCOUNT_CTI_API_HOST` is `kit-cti-{region}.voximplant.com`, where the region is your account region in lowercase (us, br, eu, kz, ru, ru2).
+* `YOUR_ACCOUNT_MESSAGING_API_HOST` is `kit-im-{region}.voximplant.com`, where the region is your account region in lowercase (us, br, eu, kz, ru, ru2).
+
+== Query parameters
+
+[cols="1a,1a,1a,2a",options="header"]
+|===
+|Name |Type |Required |Description
+
+|`domain`
+|`string`
+|Yes
+|The account name. Obtained from **Administration > Security > API tokens**.
+
+|`access_token`
+|`string`
+|Yes
+|The API access token. Passed in the query string. Generate it in **Administration > Security > API tokens**.
+|===
+
+== Body parameters
+
+Request body type: `multipart/form-data`
+
+[cols="1a,1a,1a,1a,2a",options="header"]
+|===
+| Name | Example value | Type | Required | Description
+
+|`title`
+|`test`
+|`string`
+|Yes
+|The mailing name.
+
+|`planned_date_start`
+|`2022-02-20 08:00:00`
+|`string`
+|No
+|The planned start date and time in format `YYYY-MM-DD HH:MM:SS` (account time zone).
+
+|`planned_date_end`
+|`2022-02-20 08:00:00`
+|`string`
+|No
+|The planned end date and time in format `YYYY-MM-DD HH:MM:SS` (account time zone).
+
+|`working_time`
+|`["11:35", "19:00"]`
+|`string`
+|No
+|The time interval for message sending. Must be a JSON-array of two strings: start and end time in `HH:MM` format. Example: `["09:00", "18:00"]`.
+
+|`channel_id`
+|`43`
+|`integer`
+|Yes
+|The WhatsApp channel ID. Can be obtained via the `getChannels` method or from the Voximplant Kit interface.
+
+|`whatsapp_hsm_template_id`
+|`23`
+|`integer`
+|Yes
+|The WhatsApp HSM template ID. Can be obtained via the `getTemplates` method or from the Voximplant Kit interface.
+|===
+
+== Example request
+
+++++
+<div class="api-tabs" data-api-tabs>
+  <div class="api-tabs__nav">
+    <button type="button" class="api-tabs__button is-active" data-tab-button data-tab-target="create-curl">
+
+curl
+    </button>
+    <button type="button" class="api-tabs__button" data-tab-button data-tab-target="create-http">
+
+HTTP
+    </button>
+  </div>
+
+  <div class="api-tabs__panel is-active" data-tab-panel="create-curl">
+    <pre><code>curl --location 'https://YOUR_ACCOUNT_API_HOST/api/v3/bulkMessaging/create?domain=YOUR_ACCOUNT_NAME&amp;access_token=YOUR_ACCESS_TOKEN' \
+  --form 'title="test"' \
+  --form 'planned_date_start="2022-02-20 08:00:00"' \
+  --form 'planned_date_end="2022-02-20 08:00:00"' \
+  --form 'working_time=[\"11:35\", \"19:00\"]' \
+  --form 'channel_id="43"' \
+  --form 'whatsapp_hsm_template_id="23"'</code></pre>
+  </div>
+
+  <div class="api-tabs__panel" data-tab-panel="create-http">
+    <pre><code>POST /api/v3/bulkMessaging/create?domain=YOUR_ACCOUNT_NAME&amp;access_token=YOUR_ACCESS_TOKEN HTTP/1.1
+Host: YOUR_ACCOUNT_API_HOST
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="title"
+
+test
+------Boundary
+Content-Disposition: form-data; name="planned_date_start"
+
+2022-02-20 08:00:00
+------Boundary
+Content-Disposition: form-data; name="planned_date_end"
+
+2022-02-20 08:00:00
+------Boundary
+Content-Disposition: form-data; name="working_time"
+
+["11:35", "19:00"]
+------Boundary
+Content-Disposition: form-data; name="channel_id"
+
+43
+------Boundary
+Content-Disposition: form-data; name="whatsapp_hsm_template_id"
+
+23
+------Boundary--</code></pre>
+  </div>
+</div>
+++++
+
+== Response
+
+A successful response returns the ID of the created mailing.
+
+[cols="1a,1a,2a",options="header"]
+|===
+|Field |Type |Description
+
+|`success`
+|`boolean`
+|Always `true` for a successful request.
+
+|`result.id`
+|`integer`
+|The unique identifier of the created WhatsApp mailing.
+|===
+
+*Example successful response:*
+
+[source, json]
+----
+{
+    "success": true,
+    "result": {
+        "id": 12345
+    }
+}
+----
+
+*Example error response:*
+
+[source, json]
+----
+{
+    "success": false,
+    "result": {
+        "error": "You are not allowed to perform this action.",
+        "code": 403
+    }
+}
+----

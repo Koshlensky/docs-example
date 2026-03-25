@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.20">
-<title>Работа с сервисом Employee</title>
+<title>create</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -432,636 +432,564 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 #footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
+<style>
+  body, p, li, td, th {
+    font-family: system-ui, "Segoe UI", "Noto Sans", Arial, sans-serif !important;
+  }
+  strong, b { font-weight: 700 !important; }
+</style>
 </head>
 <body class="article">
 <div id="header">
-<h1>Работа с сервисом Employee</h1>
+<h1>create</h1>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
-<div class="paragraph">
-<p><code>Employee</code>&#8201;&#8212;&#8201;это веб-сервис для централизованного хранения и управления данными о сотрудниках организаций.</p>
-</div>
-<div class="paragraph">
-<p>Раньше данные сотрудников дублировались в разных организациях одного пользователя: если сотрудник участвовал в нескольких организациях, его реквизиты приходилось заводить и обновлять в каждой отдельно. Это приводило к расхождениям и ошибкам в отчетности.</p>
-</div>
-<div class="paragraph">
-<p>Сервис <code>Employee</code> решает эту проблему:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Данные сотрудника создаются один раз и переиспользуются во всех организациях пользователя;</p>
-</li>
-<li>
-<p>При изменении данных сотрудника обновления автоматически учитываются во всех связанных организациях;</p>
-</li>
-<li>
-<p>Данные изолированы по пользователям: сущности одного пользователя недоступны другим.</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_основные_сущности">Основные сущности</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>С сервисом <code>Employee</code> можно работать двумя способами:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Через REST API&#8201;&#8212;&#8201;отправлять обычные HTTP-запросы (<code>GET</code>, <code>PUT</code>, <code>DELETE</code> и т.д.) к эндпоинтам сервиса. Этот способ подходит, если вы интегрируете свой сервис напрямую.</p>
-</li>
-<li>
-<p>Через клиентский интерфейс <code>IEmployeeClient</code>&#8201;&#8212;&#8201;использовать готовый класс в коде. Он сам формирует и отправляет запросы к <code>Employee</code>, а вы работаете с методами и моделями (<code>Person</code>, <code>Position</code>, <code>Role</code>) как с обычными объектами.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Во всех случаях операции строятся вокруг трех основных сущностей:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#person"><code>Person</code></a>&#8201;&#8212;&#8201;сотрудник;</p>
-</li>
-<li>
-<p><a href="#position"><code>Position</code></a>&#8201;&#8212;&#8201;должность сотрудника в конкретной организации;</p>
-</li>
-<li>
-<p><a href="#role"><code>Role</code></a>&#8201;&#8212;&#8201;роль сотрудника в организации (руководитель, отправитель и т.д.).</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="images/employee-diagram.png" alt="employee diagram"></span></p>
-</div>
-<div class="paragraph">
-<p>Эти сущности используются для формирования отчетности и других внутренних процессов. Далее рассмотрим эти сущности подробнее.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="person">Сущность <code>Person</code> (Сотрудник)</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><code>Person</code> описывает физическое лицо: ФИО, дата рождения, контакты, ИНН, паспортные данные и т.п. Поля можно посмотреть в коде (<code>PersonProps</code>, <code>Person</code>).</p>
-</div>
-<div class="paragraph">
-<p>Ключевые моменты:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Каждый сотрудник имеет уникальный <code>Guid</code>;</p>
-</li>
-<li>
-<p>Данные хранятся в таблице <code>employee.persons</code>;</p>
-</li>
-<li>
-<p>Один и тот же <code>Person</code> может быть связан с несколькими организациями через <code>Position</code> и <code>Role</code>.</p>
-</li>
-</ul>
-</div>
-<div class="sect2">
-<h3 id="_методы_для_работы_с_person">Методы для работы с <code>Person</code></h3>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 16.6666%;">
-<col style="width: 33.3333%;">
-<col style="width: 16.6668%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-center valign-middle">Метод</th>
-<th class="tableblock halign-center valign-middle">Что делает</th>
-<th class="tableblock halign-center valign-middle">Основные параметры</th>
-<th class="tableblock halign-center valign-middle">Пример использования</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>SavePerson(Guid user, Person person)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Создает нового или обновляет существующего сотрудника. <code>Guid</code> сотрудника задается на стороне клиента.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>&#8201;&#8212;&#8201;идентификатор владельца данных; <code>person</code>&#8201;&#8212;&#8201;объект с <code>Guid</code> и реквизитами.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Сгенерировать <code>Guid</code>, заполнить <code>Person</code> и вызвать <code>SavePerson</code>. При повторном вызове с тем же <code>Guid</code> данные обновятся, дубликат не создастся. Корректное использование: <code>PUT /person/&#123;personId}</code> вместо <code>POST /person</code>.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>GetPerson(Guid user, Guid personGuid)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Возвращает данные одного сотрудника.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>personGuid</code>&#8201;&#8212;&#8201;<code>Guid</code> сотрудника.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Получить сотрудника по его идентификатору, чтобы показать карточку или подставить реквизиты в отчет.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>GetPersons(Guid user, int? skip, int? take, IEnumerable&lt;string&gt; fieldsToInclude)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Возвращает список сотрудников пользователя с постраничным выводом.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>skip</code>/<code>take</code>&#8201;&#8212;&#8201;постраничный просмотр; <code>fieldsToInclude</code>&#8201;&#8212;&#8201;какие поля включить.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Загрузить первый экран списка сотрудников (<code>skip=0</code>, <code>take</code>&#8201;&#8212;&#8201;нужное количество), при необходимости ограничив набор полей.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>SearchPersons(Guid user, IFilter filter, int? skip, int? take, IEnumerable&lt;string&gt; fieldsToInclude)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Ищет сотрудников по заданным условиям.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>filter</code>&#8201;&#8212;&#8201;условия поиска; <code>skip</code>/<code>take</code>; <code>fieldsToInclude</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Найти сотрудников по ФИО, ИНН или другим атрибутам через единый сервис, не дублируя поиск в разных системах.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>DeletePerson(Guid user, Guid personGuid)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Удаляет сотрудника.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>personGuid</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Удалить сотрудника, если он больше не используется.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="position">Сущность <code>Position</code> (Должность)</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><code>Position</code> описывает, кем сотрудник числится в конкретной организации.</p>
-</div>
-<div class="paragraph">
-<p>Основное:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Поля: <code>Person</code> (<code>Guid</code> сотрудника), <code>Organization</code> (<code>Guid</code> организации), <code>Title</code> (должность);</p>
-</li>
-<li>
-<p>Данные хранятся в <code>employee.positions</code>;</p>
-</li>
-<li>
-<p>Ключ&#8201;&#8212;&#8201;пара <code>Person + Organization</code>: у сотрудника может быть только одна должность в одной организации.</p>
-</li>
-</ul>
-</div>
-<div class="sect2">
-<h3 id="_методы_для_работы_с_position">Методы для работы с <code>Position</code></h3>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 16.6666%;">
-<col style="width: 33.3333%;">
-<col style="width: 16.6668%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-center valign-middle">Метод</th>
-<th class="tableblock halign-center valign-middle">Что делает</th>
-<th class="tableblock halign-center valign-middle">Основные параметры</th>
-<th class="tableblock halign-center valign-middle">Пример использования</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>SavePosition(Guid user, Position position)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Создает или обновляет должность сотрудника в организации (идемпотентно по паре <code>Person</code>+<code>Organization</code>).</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>position.Person</code>; <code>position.Organization</code>; <code>position.Title</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Назначить сотруднику должность в организации или изменить существующую (например, «Бухгалтер» → «Главный бухгалтер»).</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>GetPosition(Guid user, Guid person, Guid organization)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Возвращает должность конкретного сотрудника в конкретной организации.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>person</code>; <code>organization</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Показать, кем сотрудник числится в выбранной организации (для интерфейса выбора ответственных лиц и т.п.).</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-Явного метода удаления должности в API нет&#8201;&#8212;&#8201;при необходимости можно изменить должность вызовом <code>SavePosition</code> с новым значением <code>Title</code> или решить через удаление сотрудника либо организационных данных.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="role">Сущность <code>Role</code> (Роль)</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><code>Role</code> описывает функцию сотрудника в контексте организации (например, руководитель или отправитель отчетности). Имеет следующие особенности:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Тип роли задается через <code>RoleType</code> (4 варианта: Руководитель, Главный бухгалтер, Уполномоченный представитель (отправитель), Индивидуальный предприниматель);</p>
-</li>
-<li>
-<p>Ключом записи служит комбинация <code>Organization + RoleType</code>;</p>
-</li>
-<li>
-<p>Значением являются:</p>
-<div class="ulist">
-<ul>
-<li>
-<p><code>Person</code>&#8201;&#8212;&#8201;<code>Guid</code> сотрудника;</p>
-</li>
-<li>
-<p><code>PositionOrganization</code>&#8201;&#8212;&#8201;<code>Guid</code> организации, в которой этот сотрудник состоит по должности.</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Это позволяет назначить на роль в организации как ее собственного сотрудника, так и сотрудника из другой организации того же пользователя.</p>
-</li>
-</ul>
-</div>
-<div class="sect2">
-<h3 id="_методы_для_работы_с_role">Методы для работы с <code>Role</code></h3>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 28.5714%;">
-<col style="width: 14.2857%;">
-<col style="width: 28.5714%;">
-<col style="width: 28.5715%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-center valign-middle">Метод</th>
-<th class="tableblock halign-center valign-middle">Что делает</th>
-<th class="tableblock halign-center valign-middle">Основные параметры</th>
-<th class="tableblock halign-center valign-middle">Пример использования</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>SaveRole(Guid user, Role role)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Назначает или обновляет роль в организации. Если по ключу (<code>Organization</code>, <code>Type</code>) уже была роль, она будет заменена.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>role.Organization</code>; <code>role.Type</code>; <code>role.Person</code>; <code>role.PositionOrganization</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Назначить руководителя, главбуха или отправителя для организации. При изменении&#8201;&#8212;&#8201;просто вызвать <code>SaveRole</code> с новым сотрудником.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>GetRole(Guid user, Guid organization, RoleType roleType)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Возвращает данные по конкретной роли в организации.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>organization</code>; <code>roleType</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Узнать, кто сейчас является руководителем или отправителем в выбранной организации.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>GetRoles(Guid user, Guid organization)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Возвращает все назначенные роли в одной организации в виде словаря <code>RoleType &#8594; RoleResponse</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>organization</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Загрузить всю матрицу ответственных по организации: руководитель, главбух, отправитель и т.д.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>GetRoles(Guid user)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Возвращает все роли по всем организациям пользователя. Структура: <code>OrganizationGuid &#8594; (RoleType &#8594; RoleResponse)</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Построить сводную картину: кто за что отвечает во всех организациях пользователя.</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>GetPersonRoles(Guid user, Guid person, int? skip, int? take)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Возвращает все роли, которые выполняет конкретный сотрудник.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>person</code>; <code>skip</code>/<code>take</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Посмотреть, в каких организациях и в каких ролях задействован сотрудник (например, один человек отвечает за отправку отчетов в нескольких организациях).</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>DeleteRole(Guid user, Guid organization, RoleType roleType)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Удаляет конкретную роль в организации.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>organization</code>; <code>roleType</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Снять назначение (например, временно оставить организацию без главбуха до назначения нового).</p>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>DeleteRoles(Guid user, Guid organization)</code></p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Удаляет все роли в организации.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p><code>user</code>; <code>organization</code>.</p>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
-<p>Быстро очистить роли при закрытии или переразборе организации, не вызывая <code>DeleteRole</code> по одной.</p>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_примеры_запросов_и_ответов">Примеры запросов и ответов</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Ниже приведены упрощенные примеры запросов и ответов, основанные на моделях <code>Person</code>, <code>Position</code> и <code>Role</code>. Они показывают общий формат взаимодействия с сервисом <code>Employee</code> через REST API.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-Примеры ниже иллюстрируют общий формат запросов и данных сущностей на основе моделей из кода (<code>Person</code>, <code>Position</code>, <code>Role</code>). Точные URL и полную структуру ответа (<code>EmployeeRequestResult</code> и служебные поля) нужно уточнить по фактическому API контракту.
-</td>
-</tr>
-</table>
-</div>
-<details>
-<summary class="title"><em>Пример: создание/обновление сотрудника (<code>SavePerson</code> / <code>PUT /person/&#123;personId}</code>)</em></summary>
-<div class="content">
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Запрос</th>
-<th class="tableblock halign-left valign-top">Ответ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">PUT /person/550e8400-e29b-41d4-a716-446655440000
-Content-Type: application/json
+<style>
+.api-tabs {
+  margin: 1.5rem 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
 
-{
-  &quot;Guid&quot;: &quot;550e8400-e29b-41d4-a716-446655440000&quot;,
-  &quot;FullName&quot;: {
-    &quot;LastName&quot;: &quot;Иванов&quot;,
-    &quot;FirstName&quot;: &quot;Иван&quot;,
-    &quot;MiddleName&quot;: &quot;Иванович&quot;
-  },
-  &quot;InnFl&quot;: &quot;123456789012&quot;,
-  &quot;Phone&quot;: &quot;+7-999-000-00-00&quot;,
-  &quot;Email&quot;: &quot;ivanov@example.com&quot;
-}</code></pre>
+.api-tabs__nav {
+  display: flex;
+  gap: 0;
+  padding: 0.5rem 0.5rem 0;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.api-tabs__button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  padding: 0.75rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.api-tabs__button:hover {
+  color: #111827;
+}
+
+.api-tabs__button.is-active {
+  color: #111827;
+  border-bottom-color: #7c3aed;
+}
+
+.api-tabs__panel {
+  display: none;
+  padding: 1rem;
+}
+
+.api-tabs__panel.is-active {
+  display: block;
+}
+
+.api-tabs__panel > :first-child {
+  margin-top: 0;
+}
+
+.api-tabs__panel > :last-child {
+  margin-bottom: 0;
+}
+
+/* Кодовые блоки внутри табов */
+.api-tabs pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: #111827;
+  color: #f9fafb;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.api-tabs code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* Светлый вариант, если нужен */
+.api-tabs--light pre {
+  background: #f8fafc;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('[data-api-tabs]').forEach(function (tabs) {
+    const buttons = tabs.querySelectorAll('[data-tab-button]');
+    const panels = tabs.querySelectorAll('[data-tab-panel]');
+
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        const target = button.getAttribute('data-tab-target');
+
+        buttons.forEach(function (btn) {
+          btn.classList.remove('is-active');
+        });
+
+        panels.forEach(function (panel) {
+          panel.classList.remove('is-active');
+        });
+
+        button.classList.add('is-active');
+        const activePanel = tabs.querySelector('[data-tab-panel="' + target + '"]');
+        if (activePanel) {
+          activePanel.classList.add('is-active');
+        }
+      });
+    });
+  });
+});
+</script>
+<style>
+.screenshot-bordered img{
+  border: 1px solid #ccc;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  background-color: white;
+}
+
+.doc h1,
+.doc h2,
+.doc h3,
+.doc h4,
+.doc h5,
+.doc h6,
+.article h1,
+.sect1 > h2,
+.sect2 > h3,
+.sect3 > h4,
+.sect4 > h5,
+.sect5 > h6 {
+  color: #111 !important;
+}
+</style>
+<div class="paragraph">
+<p>Creates a WhatsApp mailing in Voximplant Kit.</p>
 </div>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="http">HTTP/1.1 200 OK</code></pre>
-</div>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-</details>
-<details>
-<summary class="title"><em>Пример: получение сотрудника (<code>GetPerson</code> / <code>GET /person/&#123;personId}</code>)</em></summary>
-<div class="content">
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Запрос</th>
-<th class="tableblock halign-left valign-top">Ответ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">GET /person/550e8400-e29b-41d4-a716-446655440000
-Accept: application/json</code></pre>
-</div>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="json">{
-  <span style="color:#606"><span style="color:#404">&quot;</span><span>Guid</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">550e8400-e29b-41d4-a716-446655440000</span><span style="color:#710">&quot;</span></span>,
-  <span style="color:#606"><span style="color:#404">&quot;</span><span>FullName</span><span style="color:#404">&quot;</span></span>: {
-    <span style="color:#606"><span style="color:#404">&quot;</span><span>LastName</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Иванов</span><span style="color:#710">&quot;</span></span>,
-    <span style="color:#606"><span style="color:#404">&quot;</span><span>FirstName</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Иван</span><span style="color:#710">&quot;</span></span>,
-    <span style="color:#606"><span style="color:#404">&quot;</span><span>MiddleName</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Иванович</span><span style="color:#710">&quot;</span></span>
-  },
-  <span style="color:#606"><span style="color:#404">&quot;</span><span>InnFl</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">123456789012</span><span style="color:#710">&quot;</span></span>,
-  <span style="color:#606"><span style="color:#404">&quot;</span><span>Phone</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">+7-999-000-00-00</span><span style="color:#710">&quot;</span></span>,
-  <span style="color:#606"><span style="color:#404">&quot;</span><span>Email</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">ivanov@example.com</span><span style="color:#710">&quot;</span></span>
-}</code></pre>
-</div>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-</details>
-<details>
-<summary class="title"><em>Пример: получение ролей в организации (<code>GetRoles(user, organization)</code>)</em></summary>
-<div class="content">
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Запрос</th>
-<th class="tableblock halign-left valign-top">Ответ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">GET /roles?organization=3fa85f64-5717-4562-b3fc-2c963f66afa6
-Accept: application/json</code></pre>
-</div>
-</div></div></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="json">{
-  <span style="color:#606"><span style="color:#404">&quot;</span><span>Director</span><span style="color:#404">&quot;</span></span>: {
-    <span style="color:#606"><span style="color:#404">&quot;</span><span>Person</span><span style="color:#404">&quot;</span></span>: {
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>Guid</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">11111111-1111-1111-1111-111111111111</span><span style="color:#710">&quot;</span></span>,
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>FullName</span><span style="color:#404">&quot;</span></span>: {
-        <span style="color:#606"><span style="color:#404">&quot;</span><span>LastName</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Иванов</span><span style="color:#710">&quot;</span></span>,
-        <span style="color:#606"><span style="color:#404">&quot;</span><span>FirstName</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Иван</span><span style="color:#710">&quot;</span></span>
-      }
-    },
-    <span style="color:#606"><span style="color:#404">&quot;</span><span>Position</span><span style="color:#404">&quot;</span></span>: {
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>Person</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">11111111-1111-1111-1111-111111111111</span><span style="color:#710">&quot;</span></span>,
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>Organization</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">3fa85f64-5717-4562-b3fc-2c963f66afa6</span><span style="color:#710">&quot;</span></span>,
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>Title</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Директор</span><span style="color:#710">&quot;</span></span>
-    }
-  },
-  <span style="color:#606"><span style="color:#404">&quot;</span><span>ChiefAccountant</span><span style="color:#404">&quot;</span></span>: {
-    <span style="color:#606"><span style="color:#404">&quot;</span><span>Person</span><span style="color:#404">&quot;</span></span>: {
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>Guid</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">22222222-2222-2222-2222-222222222222</span><span style="color:#710">&quot;</span></span>,
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>FullName</span><span style="color:#404">&quot;</span></span>: {
-        <span style="color:#606"><span style="color:#404">&quot;</span><span>LastName</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Петрова</span><span style="color:#710">&quot;</span></span>,
-        <span style="color:#606"><span style="color:#404">&quot;</span><span>FirstName</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Анна</span><span style="color:#710">&quot;</span></span>
-      }
-    },
-    <span style="color:#606"><span style="color:#404">&quot;</span><span>Position</span><span style="color:#404">&quot;</span></span>: {
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>Person</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">22222222-2222-2222-2222-222222222222</span><span style="color:#710">&quot;</span></span>,
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>Organization</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">3fa85f64-5717-4562-b3fc-2c963f66afa6</span><span style="color:#710">&quot;</span></span>,
-      <span style="color:#606"><span style="color:#404">&quot;</span><span>Title</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">Главный бухгалтер</span><span style="color:#710">&quot;</span></span>
-    }
-  }
-}</code></pre>
-</div>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-</details>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_как_использовать_сервис_в_своих_приложениях">Как использовать сервис в своих приложениях</h2>
+<h2 id="_general_information">General information</h2>
 <div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>HTTP Method</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>POST</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Method name</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>create</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Endpoint</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code><a href="https://YOUR_ACCOUNT_API_HOST/api/v3/bulkMessaging/create" class="bare">https://YOUR_ACCOUNT_API_HOST/api/v3/bulkMessaging/create</a></code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Description</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Creates a WhatsApp mailing with the specified parameters.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_authentication">Authentication</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The preferred way of using the Voximplant Kit API is as follows:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Generate an API token in the <strong>Administration &gt; Security &gt; API tokens</strong> section in Voximplant Kit.</p>
+</li>
+<li>
+<p>Paste the generated API token into the <code>access_token</code> parameter in a request body or URL (<code>YOUR_ACCESS_TOKEN</code>).</p>
+</li>
+<li>
+<p>Copy your Account name in the <strong>Administration &gt; Security &gt; API tokens</strong> section.</p>
+</li>
+<li>
+<p>Paste the Account name into the <code>domain</code> parameter in a request or URL (<code>YOUR_ACCOUNT_NAME</code>).</p>
+</li>
+<li>
+<p>Copy your API hostname in the <strong>Administration &gt; Security &gt; API tokens</strong> section.</p>
+</li>
+<li>
+<p>Paste your API hostname into a request URL (<code>YOUR_ACCOUNT_API_HOST</code>).</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Используйте <code>IEmployeeClient</code> как основной способ работы с сервисом <code>Employee</code> из кода.</p>
+<p><code>YOUR_ACCOUNT_CTI_API_HOST</code> is <code>kit-cti-{region}.voximplant.com</code>, where the region is your account region in lowercase (us, br, eu, kz, ru, ru2).</p>
 </li>
 <li>
-<p>В каждый метод передается <code>user</code> (<code>Guid</code>)&#8201;&#8212;&#8201;идентификатор владельца данных. Это связывает сотрудников, должности и роли с конкретным пользователем.</p>
-</li>
-<li>
-<p>Типичный сценарий:</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Создать <code>Person</code> через <code>SavePerson</code>;</p>
-</li>
-<li>
-<p>При необходимости назначить ему <code>Position</code> в нужной организации через <code>SavePosition</code>;</p>
-</li>
-<li>
-<p>Назначить этому сотруднику <code>Role</code> (например, сделать его отправителем отчетности) через <code>SaveRole</code>;</p>
-</li>
-<li>
-<p>Получать актуальные данные через методы <code>Get*</code> и при изменениях просто повторно вызывать <code>Save*</code> для тех же идентификаторов.</p>
+<p><code>YOUR_ACCOUNT_MESSAGING_API_HOST</code> is <code>kit-im-{region}.voximplant.com</code>, where the region is your account region in lowercase (us, br, eu, kz, ru, ru2).</p>
 </li>
 </ul>
 </div>
 </li>
-</ul>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_query_parameters">Query parameters</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Required</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>domain</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>string</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Yes</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The account name. Obtained from <strong>Administration &gt; Security &gt; API tokens</strong>.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>access_token</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>string</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Yes</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The API access token. Passed in the query string. Generate it in <strong>Administration &gt; Security &gt; API tokens</strong>.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_body_parameters">Body parameters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Request body type: <code>multipart/form-data</code></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 33.3336%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Example value</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Required</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>title</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>test</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>string</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Yes</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The mailing name.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>planned_date_start</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>2022-02-20 08:00:00</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>string</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>No</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The planned start date and time in format <code>YYYY-MM-DD HH:MM:SS</code> (account time zone).</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>planned_date_end</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>2022-02-20 08:00:00</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>string</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>No</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The planned end date and time in format <code>YYYY-MM-DD HH:MM:SS</code> (account time zone).</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>working_time</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>["11:35", "19:00"]</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>string</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>No</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The time interval for message sending. Must be a JSON-array of two strings: start and end time in <code>HH:MM</code> format. Example: <code>["09:00", "18:00"]</code>.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>channel_id</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>43</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>integer</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Yes</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The WhatsApp channel ID. Can be obtained via the <code>getChannels</code> method or from the Voximplant Kit interface.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>whatsapp_hsm_template_id</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>23</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>integer</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Yes</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The WhatsApp HSM template ID. Can be obtained via the <code>getTemplates</code> method or from the Voximplant Kit interface.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_example_request">Example request</h2>
+<div class="sectionbody">
+<div class="api-tabs" data-api-tabs>
+  <div class="api-tabs__nav">
+    <button type="button" class="api-tabs__button is-active" data-tab-button data-tab-target="create-curl">
+
+curl
+    </button>
+    <button type="button" class="api-tabs__button" data-tab-button data-tab-target="create-http">
+
+HTTP
+    </button>
+  </div>
+
+  <div class="api-tabs__panel is-active" data-tab-panel="create-curl">
+    <pre><code>curl --location 'https://YOUR_ACCOUNT_API_HOST/api/v3/bulkMessaging/create?domain=YOUR_ACCOUNT_NAME&amp;access_token=YOUR_ACCESS_TOKEN' \
+  --form 'title="test"' \
+  --form 'planned_date_start="2022-02-20 08:00:00"' \
+  --form 'planned_date_end="2022-02-20 08:00:00"' \
+  --form 'working_time=[\"11:35\", \"19:00\"]' \
+  --form 'channel_id="43"' \
+  --form 'whatsapp_hsm_template_id="23"'</code></pre>
+  </div>
+
+  <div class="api-tabs__panel" data-tab-panel="create-http">
+    <pre><code>POST /api/v3/bulkMessaging/create?domain=YOUR_ACCOUNT_NAME&amp;access_token=YOUR_ACCESS_TOKEN HTTP/1.1
+Host: YOUR_ACCOUNT_API_HOST
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="title"
+
+test
+------Boundary
+Content-Disposition: form-data; name="planned_date_start"
+
+2022-02-20 08:00:00
+------Boundary
+Content-Disposition: form-data; name="planned_date_end"
+
+2022-02-20 08:00:00
+------Boundary
+Content-Disposition: form-data; name="working_time"
+
+["11:35", "19:00"]
+------Boundary
+Content-Disposition: form-data; name="channel_id"
+
+43
+------Boundary
+Content-Disposition: form-data; name="whatsapp_hsm_template_id"
+
+23
+------Boundary--</code></pre>
+  </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_response">Response</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A successful response returns the ID of the created mailing.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>success</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>boolean</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Always <code>true</code> for a successful request.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>result.id</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><code>integer</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>The unique identifier of the created WhatsApp mailing.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>Example successful response:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="json">{
+    <span style="color:#606"><span style="color:#404">&quot;</span><span>success</span><span style="color:#404">&quot;</span></span>: <span style="color:#088">true</span>,
+    <span style="color:#606"><span style="color:#404">&quot;</span><span>result</span><span style="color:#404">&quot;</span></span>: {
+        <span style="color:#606"><span style="color:#404">&quot;</span><span>id</span><span style="color:#404">&quot;</span></span>: <span style="color:#00D">12345</span>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Example error response:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="json">{
+    <span style="color:#606"><span style="color:#404">&quot;</span><span>success</span><span style="color:#404">&quot;</span></span>: <span style="color:#088">false</span>,
+    <span style="color:#606"><span style="color:#404">&quot;</span><span>result</span><span style="color:#404">&quot;</span></span>: {
+        <span style="color:#606"><span style="color:#404">&quot;</span><span>error</span><span style="color:#404">&quot;</span></span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">You are not allowed to perform this action.</span><span style="color:#710">&quot;</span></span>,
+        <span style="color:#606"><span style="color:#404">&quot;</span><span>code</span><span style="color:#404">&quot;</span></span>: <span style="color:#00D">403</span>
+    }
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-11-06 18:28:04 +0300
+Last updated 2026-03-25 14:45:53 +0300
 </div>
 </div>
 </body>
